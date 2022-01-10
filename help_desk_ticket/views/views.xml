@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!--    Extended view = helpdesk team form (HELPDESK Team creation form)
+ -->
+        <record id="helpdesk_team_ext" model="ir.ui.view">
+            <field name="name">helpdesk_team_ext</field>
+            <field name="model">helpdesk.team</field>
+            <field name="inherit_id" ref="helpdesk.helpdesk_team_view_form" />
+            <field name="arch" type="xml">
+                <xpath expr="//sheet//div//div[3]//div[2]//field[@name='visibility_member_ids']" position="after">
+                    <div>.</div>
+                    <div>.</div>
+                    <div>
+                        <group string=' '>
+                            <!-- <label for="ticket_type">Ticket type: </label> -->
+                            <field name="ticket_type" widget="many2many_tags" />
+                        </group>
+                    </div>
+                    <div>.</div>
+                    <div>
+                        <label for="ticket_tag">Ticket tag: </label>
+                        <field name="ticket_tag" widget="many2many_tags" />
+                    </div>
+                </xpath>
+            </field>
+        </record>
+        <!--        Extended view = All tickets (create ticket forms)
+ -->
+        <record id="helpdesk_type_ext" model="ir.ui.view">
+            <field name="name">helpdesk_type_ext</field>
+            <field name="model">helpdesk.ticket</field>
+            <field name="inherit_id" ref="helpdesk.helpdesk_ticket_view_form" />
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='ticket_type_id']" position="replace">
+                    <field name="ticket_type_id" domain="[('id', 'in', ticket_type)]" />
+                    <field name="ticket_type" widget="many2many_tags" nolabel="1" />
+                </xpath>
+                <xpath expr="//field[@name='tag_ids']" position="replace">
+                    <field name="tag_ids" domain="[('id', 'in', ticket_type)]" widget="many2many_tags" options="{'color_field': 'color'}" />
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>
