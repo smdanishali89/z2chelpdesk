@@ -39,7 +39,12 @@ class ticket_extension(models.Model):
 		helpdesk_team = self.env['helpdesk.team'].search([])
 		if helpdesk_team:
 			for team in helpdesk_team:
-				if team.name in (vals['name']):
+				ticket_name = ""
+				ticket_name = ""
+				
+				ticket_name = (vals['name'])
+				team_name = team.name
+				if team_name.lower() in ticket_name.lower():
 
 					(vals['team_id']) = team.id
 				else:
