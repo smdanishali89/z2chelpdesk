@@ -7,7 +7,6 @@ class team_extension(models.Model):
 	_inherit = ['helpdesk.team']
 
 	ticket_type = fields.Many2many('helpdesk.ticket.type', string="Ticket type")
-	
 	ticket_tag = fields.Many2many('helpdesk.tag', string="Ticket tag")
 
 
