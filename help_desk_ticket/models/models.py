@@ -33,6 +33,24 @@ class ticket_extension(models.Model):
 		self.ticket_tag = self.team_id.ticket_tag
 
 
+	@api.model
+	def create(self, vals):
+
+
+		helpdesk_team = self.env['helpdesk.team'].search([])
+		if helpdesk_team:
+			for team in helpdesk_team:
+				if team.name in (vals['name']):
+
+					(vals['team_id']) = team.id
+				else:
+				    print("Not found!")
+
+		new_record = super(ticket_extension, self).create(vals)
+
+		return new_record
+
+
 
 
 
