@@ -8,6 +8,7 @@ class team_extension(models.Model):
 
 	ticket_type = fields.Many2many('helpdesk.ticket.type', string="Ticket type")
 	ticket_tag = fields.Many2many('helpdesk.tag', string="Ticket tag")
+	default_team = fields.Boolean(string="Default team")
 
 
 
@@ -17,7 +18,6 @@ class ticket_extension(models.Model):
 	_inherit = ['helpdesk.ticket']
 
 	ticket_type = fields.Many2many('helpdesk.ticket.type', string="New Ticket type" , compute ='compute_ticket_type')
-
 	ticket_tag = fields.Many2many('helpdesk.tag', string="Ticket tag", compute ='compute_ticket_tag')
 
 
@@ -34,25 +34,22 @@ class ticket_extension(models.Model):
 
 	@api.model
 	def create(self, vals):
-
-
-		helpdesk_team = self.env['helpdesk.team'].search([])
-		if helpdesk_team:
-			for team in helpdesk_team:
-				ticket_name = ""
-				ticket_name = ""
-				
-				ticket_name = (vals['name'])
-				team_name = team.name
-				if team_name.lower() in ticket_name.lower():
-
-					(vals['team_id']) = team.id
-				else:
-				    print("Not found!")
-
+		subject = ""
+		subject =  ((vals['name']).split(' ',1))[0]
+		default_team = self.env['helpdesk.team'].search([('default_team','=',True)], limit=1).id
+		if subject:
+			helpdesk_team = self.env['helpdesk.team'].search([('name','=',subject)])
+			if helpdesk_team:
+				(vals['team_id']) = helpdesk_team.id
+			else:
+				(vals['team_id']) = default_team
+		else:
+			(vals['team_id']) = default_team
+		
 		new_record = super(ticket_extension, self).create(vals)
 
 		return new_record
+
 
 
 

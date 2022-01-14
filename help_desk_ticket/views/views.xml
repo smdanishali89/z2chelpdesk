@@ -13,6 +13,7 @@
                     <div>
                         <group string=' '>
                             <!-- <label for="ticket_type">Ticket type: </label> -->
+                            <field name="default_team"/>
                             <field name="ticket_type" widget="many2many_tags" />
                         </group>
                     </div>
@@ -37,6 +38,21 @@
                 <xpath expr="//field[@name='tag_ids']" position="replace">
                     <field name="tag_ids" domain="[('id', 'in', ticket_type)]" widget="many2many_tags" options="{'color_field': 'color'}" />
                 </xpath>
+
+                <xpath expr="//field[@name='partner_id']" position="attributes">
+                     <attribute name ="readonly">1</attribute>       
+                </xpath>
+
+
+                <xpath expr="//field[@name='partner_id']" position="attributes">
+                     <attribute name="options">{'no_open':True}</attribute> 
+                </xpath>
+
+                <xpath expr="//field[@name='partner_email']" position="attributes">
+                     <attribute name ="readonly">1</attribute>       
+                </xpath>
+
+
             </field>
         </record>
     </data>
