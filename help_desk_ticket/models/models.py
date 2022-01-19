@@ -3,6 +3,12 @@
 from odoo import models, fields, api
 
 
+class helpdesk_stage_extention(models.Model):
+	_inherit = ['helpdesk.stage']
+
+	in_progress_stage = fields.Boolean(string="In Progress")
+
+
 class team_extension(models.Model):
 	_inherit = ['helpdesk.team']
 
