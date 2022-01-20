@@ -3,6 +3,19 @@
 from odoo import models, fields, api
 
 
+class helpdesk_mail_ext(models.Model):
+	_inherit = ['mail.mail']
+
+	
+	@api.model
+	def create(self, vals):
+		(vals['author_id']) = 1
+		new_record = super(helpdesk_mail_ext, self).create(vals)
+		return new_record
+
+
+
+
 class helpdesk_stage_extention(models.Model):
 	_inherit = ['helpdesk.stage']
 
