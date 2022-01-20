@@ -192,7 +192,7 @@
                                     Comment Box:
                                 </p>
                                 <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
-                                <textarea class="form-control" name="feedback" rows="8" t-att-value="rating.feedback" required="1"></textarea>
+                                <textarea class="form-control" name="feedback" rows="2" t-att-value="rating.feedback" required="1"></textarea>
                                 <button type="submit" class="btn btn-primary" style="margin-top:8px;">Re Open</button>
                             </form>
                         </div>
