@@ -11,7 +11,8 @@ class helpdesk_mail_ext(models.Model):
 	def create(self, vals):
 		if (vals['message_type']) == "comment" and  (vals['model']) == "helpdesk.ticket":
 			ticket_record = (vals['parent_id'])
-			(vals['email_from']) = ticket_record.email_from
+			ticket_id = self.env['helpdesk.ticket'].search([('id','=',(vals['res_id']) )])
+			(vals['email_from']) = 	str(ticket_id.team_id.name)+' Helpdesk <helpdesk@z2climited.com>'
 
 		new_record = super(helpdesk_mail_ext, self).create(vals)
 		return new_record
