@@ -4,12 +4,15 @@ from odoo import models, fields, api
 
 
 class helpdesk_mail_ext(models.Model):
-	_inherit = ['mail.mail']
+	_inherit = ['mail.message']
 
 	
 	@api.model
 	def create(self, vals):
-		(vals['author_id']) = 1
+		if (vals['message_type']) == "comment" and  (vals['model']) == "helpdesk.ticket":
+			ticket_record = (vals['parent_id'])
+			(vals['email_from']) = ticket_record.email_from
+
 		new_record = super(helpdesk_mail_ext, self).create(vals)
 		return new_record
 
