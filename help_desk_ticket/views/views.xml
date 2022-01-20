@@ -26,6 +26,7 @@
                 </xpath>
             </field>
         </record>
+        
         <!-- Extended view = All tickets (create ticket forms) -->
         <record id="helpdesk_type_ext" model="ir.ui.view">
             <field name="name">helpdesk_type_ext</field>
@@ -37,8 +38,21 @@
                     <field name="ticket_type" widget="many2many_tags" nolabel="1" invisible="1" />
                 </xpath>
                 <xpath expr="//field[@name='tag_ids']" position="replace">
-                    <field name="tag_ids" domain="[('id', 'in',ticket_tag)]" widget="many2many_tags" options="{'color_field': 'color'}" />
+                    <field name="tag_ids" domain="[('id', 'in',ticket_tag)]" widget="many2many_tags" options="{'color_field': 'color','no_create': True ,'no_open': True}" />
                     <field name="ticket_tag" widget="many2many_tags" nolabel="1" invisible="1" />
+                </xpath>
+
+                <xpath expr="//field[@name='team_id']" position="attributes">
+                     <attribute name ="readonly">1</attribute>       
+                </xpath>
+
+
+                <xpath expr="//field[@name='team_id']" position="attributes">
+                     <attribute name="options">{'no_open':True}</attribute> 
+                </xpath>
+
+                <xpath expr="//field[@name='user_id']" position="attributes">
+                     <attribute name ="readonly">1</attribute>       
                 </xpath>
 
                 <xpath expr="//field[@name='partner_id']" position="attributes">
@@ -57,6 +71,23 @@
 
             </field>
         </record>
+
+        <record id="help_desk_extention_readonly_0" model="ir.ui.view">
+            <field name="name">help_desk_extention_readonly_0</field>
+            <field name="model">helpdesk.ticket</field>
+            <field name="inherit_id" ref="helpdesk_type_ext" />
+            <field name="groups_id" eval="[(6, 0, [ref('helpdesk.group_helpdesk_manager')])]" />                
+            <field name="arch" type="xml">                                   
+                <field name="team_id" position="attributes">
+                   <attribute name="readonly">0</attribute>                   
+                </field>                                    
+                <field name="user_id" position="attributes">
+                   <attribute name="readonly">0</attribute>                   
+                </field>                                                   
+            </field>
+        </record>  
+
+
         <!-- Extended view = All tickets (create ticket forms) -->
         <record id="helpdesk_stage_ext" model="ir.ui.view">
             <field name="name">helpdesk_stage_ext</field>
@@ -69,7 +100,7 @@
                 </xpath>
 
             </field>
-        </record>
+        </record>  
     </data>
 
         <template id="rating_external_page_submit_re_open" name="Rating Page Submit">
