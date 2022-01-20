@@ -21,7 +21,7 @@
                             % else:
                                 Hello,<br/>
                             % endif
-                            Please take a moment to rate our services related to the ticket "<strong>${object.name}</strong>"
+                            This ticket has been closed. Please take a moment to rate our services related to the ticket "<strong>${object.name}</strong>"
                             % if object.rating_get_rated_partner_id().name:
                                 assigned to <strong>${object.rating_get_rated_partner_id().name}</strong>.<br/>
                             % else:
@@ -49,8 +49,9 @@
                                             </td>
                                             <td>
                                                 <a href="/rate/${access_token}/1">
-                                                    <h2>RE OPEN</h2>
-                                                    <!-- <img alt="Highly Dissatisfied" src="/rating/static/src/img/rating_1.png" title="Re open"/> -->
+                                                    <img alt="Re Open" src="/help_desk_ticket/refresh.png" title="Re open"/>
+                                                    <h4>Re Open</h4>
+
                                                 </a>
                                             </td>
                                         </tr>
