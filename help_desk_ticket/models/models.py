@@ -13,6 +13,10 @@ class helpdesk_mail_ext(models.Model):
 			ticket_record = (vals['parent_id'])
 			ticket_id = self.env['helpdesk.ticket'].search([('id','=',(vals['res_id']) )])
 			(vals['email_from']) = 	str(ticket_id.team_id.name)+' Helpdesk <helpdesk@z2climited.com>'
+		
+		if (vals['message_type']) == "notification" and  (vals['model']) == "helpdesk.ticket" and (vals['author_id']) == 4:
+			ticket_id = self.env['helpdesk.ticket'].search([('id','=',(vals['res_id']) )])
+			(vals['author_id']) = 	ticket_id.partner_id.id
 
 		new_record = super(helpdesk_mail_ext, self).create(vals)
 		return new_record
