@@ -61,9 +61,12 @@ class Rating_ext(http.Controller):
 		record_sudo = request.env[rating.res_model].sudo().browse(rating.res_id)
 		record_sudo.rating_apply(rate, token=token, feedback=kwargs.get('feedback'))
 		lang = rating.partner_id.lang or get_lang(request.env).code
+		
 		if rate == 1:
-			stage_in_progress = request.env['helpdesk.stage'].sudo().search([('in_progress_stage', '=',True)],limit=1)
-			rating.resource_ref.stage_id = stage_in_progress.id
+			stage_in_progress = request.env['helpdesk.stage'].sudo().search([('re_open_stage', '=',True)],limit=1)
+			rating.resource_ref.stage_id = stage_in_progress.with_user(rating.partner_id.id).id
+			# rating.resource_ref.stage_id = stage_in_progress.id
+		
 		return request.env['ir.ui.view'].with_context(lang=lang)._render_template('rating.rating_external_page_view', {
 			'web_base_url': request.env['ir.config_parameter'].sudo().get_param('web.base.url'),
 			'rating': rating,
