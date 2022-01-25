@@ -12,11 +12,11 @@ class helpdesk_mail_ext(models.Model):
 		if (vals['message_type']) == "comment" and  (vals['model']) == "helpdesk.ticket":
 			ticket_record = (vals['parent_id'])
 			ticket_id = self.env['helpdesk.ticket'].search([('id','=',(vals['res_id']) )])
-			(vals['email_from']) = 	str(ticket_id.team_id.name)+' Helpdesk <helpdesk@z2climited.com>'
+			(vals['email_from']) =  str(ticket_id.team_id.name)+' Helpdesk <helpdesk@z2climited.com>'
 		
 		if (vals['message_type']) == "notification" and  (vals['model']) == "helpdesk.ticket" and (vals['author_id']) == 4:
 			ticket_id = self.env['helpdesk.ticket'].search([('id','=',(vals['res_id']) )])
-			(vals['author_id']) = 	ticket_id.partner_id.id
+			(vals['author_id']) =   ticket_id.partner_id.id
 
 		new_record = super(helpdesk_mail_ext, self).create(vals)
 		return new_record
@@ -33,11 +33,18 @@ class helpdesk_stage_extention(models.Model):
 class team_extension(models.Model):
 	_inherit = ['helpdesk.team']
 
+
+	def _default_domain_member_ids(self):
+		return [(1, '=', 1)]
+
 	ticket_type = fields.Many2many('helpdesk.ticket.type', string="Ticket type")
 	ticket_tag = fields.Many2many('helpdesk.tag', string="Ticket tag")
 	default_team = fields.Boolean(string="Default team")
 	team_name = fields.Char(string="Team Name")
-	member_ids = fields.Many2many('res.users', string='Team Members')
+	member_ids = fields.Many2many('res.users', string='Team Members' ,domain=lambda self: self._default_domain_member_ids())
+	visibility_member_ids = fields.Many2many('res.users', 'helpdesk_visibility_team', string='Team Visibility', domain=lambda self: self._default_domain_member_ids(), help="Team Members to whom this team will be visible. Keep empty for everyone to see this team.")
+
+
 
 	@api.model
 	def create(self, vals):
