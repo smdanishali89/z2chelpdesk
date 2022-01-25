@@ -37,7 +37,7 @@ class team_extension(models.Model):
 	ticket_tag = fields.Many2many('helpdesk.tag', string="Ticket tag")
 	default_team = fields.Boolean(string="Default team")
 	team_name = fields.Char(string="Team Name")
-
+	member_ids = fields.Many2many('res.users', string='Team Members')
 
 	@api.model
 	def create(self, vals):
@@ -61,6 +61,7 @@ class ticket_extension(models.Model):
 
 	ticket_type = fields.Many2many('helpdesk.ticket.type', string="New Ticket type" , compute ='compute_ticket_type_tag')
 	ticket_tag = fields.Many2many('helpdesk.tag', string="Ticket tag", compute ='compute_ticket_type_tag')
+	internal_description = fields.Char(string="Description")
 
 
 
@@ -84,7 +85,6 @@ class ticket_extension(models.Model):
 				helpdesk_users = self.env['res.users'].search([('groups_id', 'in', self.env.ref('helpdesk.group_helpdesk_user').id)]).ids
 				task.domain_user_ids = [(6, 0, helpdesk_users)]
 			
-
 
 
 	@api.onchange('team_id')
@@ -112,6 +112,7 @@ class ticket_extension(models.Model):
 			(vals['team_id']) = default_team
 		
 		new_record = super(ticket_extension, self).create(vals)
+		new_record.compute_ticket_type_tag()
 		return new_record
 
 

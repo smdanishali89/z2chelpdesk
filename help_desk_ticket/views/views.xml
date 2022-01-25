@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
+
         <!-- Extended view = helpdesk team form (HELPDESK Team creation form) -->
         <record id="helpdesk_team_ext" model="ir.ui.view">
             <field name="name">helpdesk_team_ext</field>
@@ -34,12 +35,14 @@
             <field name="inherit_id" ref="helpdesk.helpdesk_ticket_view_form" />
             <field name="arch" type="xml">
                 <xpath expr="//field[@name='ticket_type_id']" position="replace">
-                    <field name="ticket_type_id" domain="[('id', 'in', ticket_type)]" />
+                    <field name="ticket_type_id" domain="[('id', 'in', ticket_type)]" required="1"/>
                     <field name="ticket_type" widget="many2many_tags" nolabel="1" invisible="1" />
                 </xpath>
                 <xpath expr="//field[@name='tag_ids']" position="replace">
                     <field name="tag_ids" domain="[('id', 'in',ticket_tag)]" widget="many2many_tags" options="{'color_field': 'color','no_create': True ,'no_open': True}" />
                     <field name="ticket_tag" widget="many2many_tags" nolabel="1" invisible="1" />
+                    <field name="internal_description" required="1"/>
+
                 </xpath>
 
                 <xpath expr="//field[@name='team_id']" position="attributes">
