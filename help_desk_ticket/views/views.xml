@@ -1,7 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <data>
 
+
+    <record id="group_helpdesk_view" model="res.groups">
+        <field name="name">View Access</field>
+         <field name="implied_ids" eval="[(4, ref('helpdesk.group_helpdesk_user'))]"/>
+        <field name="category_id" ref="base.module_category_services_helpdesk"/>
+    </record>
+
+
+    <record id="group_helpdesk_helpdesk_admin" model="res.groups">
+        <field name="name">Helpdesk Admin</field>
+        <field name="implied_ids" eval="[(4, ref('helpdesk.group_helpdesk_manager'))]"/>
+        <field name="category_id" ref="base.module_category_services_helpdesk"/>
+    </record>
+
+    <data>
+        <record id="hide_edit_button" model="ir.ui.view">
+            <field name="name">Edit Button</field>
+            <field name="model">helpdesk.ticket</field>
+            <field name="inherit_id" ref="helpdesk.helpdesk_ticket_view_form"/>
+            <field name="groups_id"    eval="[(6, 0, [ref('help_desk_ticket.group_helpdesk_view') ])]" />
+            <field name="arch" type="xml">
+                <xpath expr="/form" position="attributes">
+                    <attribute name="edit">false</attribute>
+                </xpath>
+            </field>
+        </record>
+        
         <!-- Extended view = helpdesk team form (HELPDESK Team creation form) -->
         <record id="helpdesk_team_ext" model="ir.ui.view">
             <field name="name">helpdesk_team_ext</field>
@@ -14,6 +40,7 @@
                     <div>
                         <group string=' '>
                             <!-- <label for="ticket_type">Ticket type: </label> -->
+                            <field name="view_member_ids" widget="many2many_tags" />
                             <field name="team_name" readonly="1"/>
                             <field name="default_team"/>
                             <field name="ticket_type" widget="many2many_tags" />
@@ -35,14 +62,18 @@
             <field name="inherit_id" ref="helpdesk.helpdesk_ticket_view_form" />
             <field name="arch" type="xml">
                 <xpath expr="//field[@name='ticket_type_id']" position="replace">
-                    <field name="ticket_type_id" domain="[('id', 'in', ticket_type)]" required="1"/>
+                    
+                    <field name="reason_of_rejection" attrs="{'required':[('reason_of_rejection_required','=',True)]}"/>
+                    <field name="reason_of_rejection_required" invisible="1"/>
+
+                    <field name="ticket_type_id" domain="[('id', 'in', ticket_type)]" required="1" options="{'no_create': True ,'no_open': True}"/>
                     <field name="ticket_type" widget="many2many_tags" nolabel="1" invisible="1" />
                 </xpath>
                 <xpath expr="//field[@name='tag_ids']" position="replace">
                     <field name="tag_ids" domain="[('id', 'in',ticket_tag)]" widget="many2many_tags" options="{'color_field': 'color','no_create': True ,'no_open': True}" />
                     <field name="ticket_tag" widget="many2many_tags" nolabel="1" invisible="1" />
-                    <field name="internal_description" required="1"/>
-
+                    <field name="remarks_required" invisible="1" />
+                    <field name="remarks" attrs="{'required':[('remarks_required','=',True)]}"/>
                 </xpath>
 
                 <xpath expr="//field[@name='team_id']" position="attributes">
@@ -54,8 +85,9 @@
                      <attribute name="options">{'no_open':True}</attribute> 
                 </xpath>
 
+
                 <xpath expr="//field[@name='user_id']" position="attributes">
-                     <attribute name ="readonly">1</attribute>       
+                     <attribute name="options">{'no_open':True}</attribute> 
                 </xpath>
 
                 <xpath expr="//field[@name='partner_id']" position="attributes">
@@ -83,10 +115,7 @@
             <field name="arch" type="xml">                                   
                 <field name="team_id" position="attributes">
                    <attribute name="readonly">0</attribute>                   
-                </field>                                    
-                <field name="user_id" position="attributes">
-                   <attribute name="readonly">0</attribute>                   
-                </field>                                                   
+                </field>
             </field>
         </record>  
 
@@ -100,6 +129,7 @@
                 
                 <xpath expr="//field[@name='is_close']" position="after">
                     <field name="re_open_stage"/>
+                    <field name="rejected_stage"/>
                 </xpath>
 
             </field>

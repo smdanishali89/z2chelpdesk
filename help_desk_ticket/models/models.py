@@ -1,6 +1,15 @@
 # -*- coding: utf-8 -*-
 
 from odoo import models, fields, api
+from odoo.exceptions import ValidationError
+
+
+class helpdesk_mail_template_ext(models.Model):
+	_inherit = ['mail.template']
+
+	active = fields.Boolean(string="Active", default=True)
+
+
 
 
 class helpdesk_mail_ext(models.Model):
@@ -28,6 +37,7 @@ class helpdesk_stage_extention(models.Model):
 	_inherit = ['helpdesk.stage']
 
 	re_open_stage = fields.Boolean(string="Re Open Stage")
+	rejected_stage = fields.Boolean(string="Rejected Stage")
 
 
 class team_extension(models.Model):
@@ -37,6 +47,8 @@ class team_extension(models.Model):
 	def _default_domain_member_ids(self):
 		return [(1, '=', 1)]
 
+
+	view_member_ids = fields.Many2many('res.users','user_member_1','user_member_1_2')
 	ticket_type = fields.Many2many('helpdesk.ticket.type', string="Ticket type")
 	ticket_tag = fields.Many2many('helpdesk.tag', string="Ticket tag")
 	default_team = fields.Boolean(string="Default team")
@@ -68,7 +80,11 @@ class ticket_extension(models.Model):
 
 	ticket_type = fields.Many2many('helpdesk.ticket.type', string="New Ticket type" , compute ='compute_ticket_type_tag')
 	ticket_tag = fields.Many2many('helpdesk.tag', string="Ticket tag", compute ='compute_ticket_type_tag')
-	internal_description = fields.Char(string="Description")
+	remarks = fields.Char(string="Remarks" , track_visibility='onchange')
+	reason_of_rejection = fields.Char(string="Reason" , track_visibility='onchange')
+	reason_of_rejection_required = fields.Boolean(string="Reason Boll")
+	internal_description = fields.Char(string="description")
+	remarks_required = fields.Boolean(string="Remarks Bool" )
 
 
 
@@ -94,10 +110,20 @@ class ticket_extension(models.Model):
 			
 
 
+	@api.onchange('stage_id')
+	def get_reject_reason(self):
+		if self.stage_id:
+			self.reason_of_rejection_required = self.stage_id.rejected_stage
+			
+
+
 	@api.onchange('team_id')
 	def get_ticket_type(self):
 		if self.ticket_type_id.id not in self.team_id.ticket_type.ids:
 			self.ticket_type_id = False
+
+		if self.team_id:
+			self.remarks_required = True
 
 
 	@api.onchange('team_id')
@@ -109,6 +135,7 @@ class ticket_extension(models.Model):
 	
 	@api.model
 	def create(self, vals):
+		# self.env['ir.rule'].clear_cache()
 		subject = ""
 		subject =  ((vals['name']).split(' ',1))[0]
 		helpdesk_team = self.env['helpdesk.team'].search([('team_name','=',subject.lower())])
@@ -121,6 +148,22 @@ class ticket_extension(models.Model):
 		new_record = super(ticket_extension, self).create(vals)
 		new_record.compute_ticket_type_tag()
 		return new_record
+
+
+
+	def write(self, vals):
+		super(ticket_extension, self).write(vals)
+		if 'stage_id' in vals:
+			record_id = self.env.ref('help_desk_ticket.group_helpdesk_view')
+			if self.user_id.id in record_id.users.ids:
+				raise ValidationError('Access Denied')
+
+		if 'stage_id' in vals and 'reason_of_rejection_required' in vals:
+			if (vals['reason_of_rejection_required']) == True and not self.reason_of_rejection:
+				raise ValidationError('Please add reason of rejection')
+
+
+		return True
 
 
 
