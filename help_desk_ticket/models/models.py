@@ -160,7 +160,7 @@ class ticket_extension(models.Model):
 
 		if 'stage_id' in vals and 'reason_of_rejection_required' in vals:
 			if (vals['reason_of_rejection_required']) == True and not self.reason_of_rejection:
-				raise ValidationError('Please add reason of rejection')
+				raise ValidationError('Please add a reason for the rejection')
 
 
 		return True
