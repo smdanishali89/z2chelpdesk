@@ -51,6 +51,7 @@ class team_extension(models.Model):
 	view_member_ids = fields.Many2many('res.users','user_member_1','user_member_1_2')
 	ticket_type = fields.Many2many('helpdesk.ticket.type', string="Ticket type")
 	ticket_tag = fields.Many2many('helpdesk.tag', string="Ticket tag")
+	team_name_link = fields.Many2one('ecube.team', string="Team Name")
 	default_team = fields.Boolean(string="Default team")
 	team_name = fields.Char(string="Team Name")
 	member_ids = fields.Many2many('res.users', string='Team Members' ,domain=lambda self: self._default_domain_member_ids())
@@ -62,14 +63,26 @@ class team_extension(models.Model):
 	def create(self, vals):
 		new_record = super(team_extension, self).create(vals)
 		new_record.team_name = new_record.name.lower()
+		new_record.creare_ecube_team()
 		return new_record
 
+	
 	def write(self, vals):
 		super(team_extension, self).write(vals)
 		if 'name' in vals:
 			self.team_name = self.name.lower()
-		
+			self.creare_ecube_team()
 		return True
+
+	
+	def creare_ecube_team(self):
+		if self.team_name_link:
+			self.team_name_link.name = self.name
+		else:
+			record = self.env['ecube.team'].create({
+				'name' : self.name
+				})
+			self.team_name_link = record.id
 
 
 
@@ -85,6 +98,25 @@ class ticket_extension(models.Model):
 	reason_of_rejection_required = fields.Boolean(string="Reason Boll")
 	internal_description = fields.Char(string="description")
 	remarks_required = fields.Boolean(string="Remarks Bool" )
+	ticket_access = fields.Boolean(string="Tciket Access",default=True)
+	team_name_link = fields.Many2one('ecube.team', string="Team Name")
+
+
+	def chaneg_team(self):
+
+		record_id = self.env.ref('help_desk_ticket.group_helpdesk_view')
+		if self._uid in record_id.users.ids:
+			raise ValidationError('Access Denied')
+		helpdesk_team = self.env['ecube.team'].sudo().search([('name','=',self.team_id.name)]).id
+
+		return {
+				'domain': [],
+				'res_model': 'ecube.team.wizard',
+				'type': 'ir.actions.act_window',
+				'view_mode': 'form',
+				'view_type': 'form',
+				'context': {'default_team_users':self.domain_user_ids.ids,'default_user_id':self.user_id.id,'default_team_name_link':helpdesk_team},
+				'target': 'new', }
 
 
 
@@ -135,7 +167,6 @@ class ticket_extension(models.Model):
 	
 	@api.model
 	def create(self, vals):
-		# self.env['ir.rule'].clear_cache()
 		subject = ""
 		subject =  ((vals['name']).split(' ',1))[0]
 		helpdesk_team = self.env['helpdesk.team'].search([('team_name','=',subject.lower())])
@@ -147,23 +178,77 @@ class ticket_extension(models.Model):
 		
 		new_record = super(ticket_extension, self).create(vals)
 		new_record.compute_ticket_type_tag()
+		new_record.sudo().update_ticket_team()
 		return new_record
-
-
 
 	def write(self, vals):
 		super(ticket_extension, self).write(vals)
 		if 'stage_id' in vals:
 			record_id = self.env.ref('help_desk_ticket.group_helpdesk_view')
-			if self.user_id.id in record_id.users.ids:
+			if self._uid in record_id.users.ids:
 				raise ValidationError('Access Denied')
 
 		if 'stage_id' in vals and 'reason_of_rejection_required' in vals:
 			if (vals['reason_of_rejection_required']) == True and not self.reason_of_rejection:
 				raise ValidationError('Please add a reason for the rejection')
 
-
+		if 'team_name_link' in vals:
+			self.sudo().update_ticket_team()
+		
 		return True
+
+
+class ecube_team_wizard(models.Model):
+	_name = 'ecube.team.wizard'
+
+	team_name_link = fields.Many2one('ecube.team', string="Team Name")
+	user_id = fields.Many2one('res.users', string="Assigned to")
+	team_users = fields.Many2many('res.users', string="Team Users", compute ='_compute_domain_user_ids')
+
+	
+	@api.depends('team_name_link')
+	def _compute_domain_user_ids(self):
+		for task in self:
+			if task.team_name_link:
+
+				team_id = task.env['helpdesk.team'].search([('name','=',task.team_name_link.name)])
+				
+				if task.team_name_link and team_id.visibility_member_ids:
+					task.team_users = team_id.visibility_member_ids.ids
+					if task.user_id.id not in team_id.visibility_member_ids.ids:
+						task.user_id = False
+				
+				else:
+					helpdesk_users = self.env['res.users'].search([('groups_id', 'in', self.env.ref('helpdesk.group_helpdesk_user').id)]).ids
+					task.team_users = [(6, 0, helpdesk_users)]
+
+	
+	def update_team(self):
+		helpdesk_team = self.env['helpdesk.team'].sudo().search([('name','=',self.team_name_link.name)])
+		helpdesk_ticket = self.env['helpdesk.ticket'].browse(self._context.get('active_ids'))
+		helpdesk_ticket.team_id = helpdesk_team.id
+		helpdesk_ticket.user_id = self.user_id.id
+
+	def save_close(self):
+
+		self.sudo().update_team()
+		form_view_id = self.env.ref('helpdesk.helpdesk_team_view_kanban').id
+		return {
+		'type': 'ir.actions.act_window',
+		'name': "New Draft Created",
+		'view_type': 'kanban',
+		'view_mode': 'kanban,form',
+		'res_model': 'helpdesk.team',
+		'views': [[form_view_id, "kanban"]],
+		'view_id': form_view_id,
+		'target' : 'main',
+		}
+
+
+class ecube_team_extension(models.Model):
+	_name = 'ecube.team'
+
+	name = fields.Char(string="Team Name")
 
 
 
