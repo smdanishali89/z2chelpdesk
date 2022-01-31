@@ -3,6 +3,7 @@
     <data>
 
         <!-- ${object.team_id.display_name} "Helpdesk" <helpdesk@z2climited.com> -->
+        
 
         <record id="new_ticket_request_email_template_ext" model="mail.template">
             <field name="name">Ticket: Reception Acknowledgment Ecube</field>
