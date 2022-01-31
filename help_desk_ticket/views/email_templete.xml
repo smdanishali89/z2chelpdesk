@@ -26,7 +26,7 @@
                         <a style="background-color: #875A7B; padding: 8px 16px 8px 16px; text-decoration: none; color: #fff; border-radius: 5px; font-size:13px;" href="${object.get_portal_url()}">View the ticket</a><br/>
                     </div>
 
-                    To add additional comments, reply to this email.<br/><br/>
+                    To add additional comments, please reply to this email.<br/><br/>
 
                     Kind regards,<br/><br/>
                     ${object.team_id.name or 'Helpdesk'} Team.
@@ -72,8 +72,9 @@
                     We regret to inform you that your ticket number ${object.id} "${object.name}"  has been rejected.<br /><br />
 
                     Reason: "${object.reason_of_rejection}".<br/><br/>
+                    Thank you for your cooperation.<br/>
 
-                    Kind regards,<br/><br/>
+                    Kind regards,<br/>
                     ${object.team_id.name or 'Helpdesk'} Team.
                 </div>
             </field>
@@ -97,13 +98,13 @@
     <tbody>
         <tr><td>
             % if partner.name:
-                Hello ${partner.name},<br/>
+                Hello Dear ${partner.name},<br/><br/>
             % else:
-                Hello,<br/>
+                Hello Dear,<br/><br/>
             % endif
-            Please take a moment to rate our services related to the ticket "<strong>${object.id} "${object.name}"</strong>"
+            Please take a moment to rate our services related to your ticket number ${object.id} "${object.name}""
             % if object.rating_get_rated_partner_id().name:
-                assigned to <strong>${object.rating_get_rated_partner_id().name}</strong>.<br/>
+                assigned to ${object.rating_get_rated_partner_id().name}.<br/>
             % else:
                 .<br/>
             % endif

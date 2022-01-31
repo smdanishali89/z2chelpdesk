@@ -70,7 +70,7 @@
                             <field name="view_member_ids" widget="many2many_tags" />
                             <field name="team_name" readonly="1"/>
                             <field name="default_team"/>
-                            <field name="team_name_link"/>
+                            <field name="team_name_link" invisible="1"/>
                             <field name="ticket_type" widget="many2many_tags" />
                         </group>
                     </div>
@@ -98,6 +98,9 @@
                     <field name="ticket_type" widget="many2many_tags" nolabel="1" invisible="1" />
                 </xpath>
 
+                <xpath expr="//button[@name='assign_ticket_to_self']" position="replace">
+                </xpath>
+
                 <xpath expr="//field[@name='tag_ids']" position="replace">
                     <field name="tag_ids" domain="[('id', 'in',ticket_tag)]" widget="many2many_tags" options="{'color_field': 'color','no_create': True ,'no_open': True}" />
                     <field name="ticket_tag" widget="many2many_tags" nolabel="1" invisible="1" />
@@ -106,7 +109,7 @@
                 </xpath>
                 
                 <xpath expr="//field[@name='team_id']" position="replace">
-                    <button name="chaneg_team" type="object" string="Update" class="oe_highlight" />
+                    <button name="chaneg_team" type="object" string="Change Team/User" class="oe_highlight" />
                     <field name="team_id" options="{'no_create': True ,'no_open': True}" readonly="1"/>
                 </xpath>
 
@@ -238,7 +241,7 @@
                 <div class="container card mb-5 mt-4 o_rating_page_submit">
                     <div class="card-body">
                         <div class="row text-center justify-content-center">
-                            <h1 class="col-12 mt-5">Are you sure you want to re open the ticket!</h1>
+                            <h1 class="col-12 mt-5">Are you sure you want to reopen the ticket!</h1>
                             <form t-attf-action="/rate/#{token}/submit_feedback" method="post">
                                 <div class="btn-group btn-group-toggle row" data-toggle="buttons">
                                     <t t-foreach="rate_names" t-as="rate_name">
@@ -256,7 +259,7 @@
                                 </p>
                                 <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
                                 <textarea class="form-control" name="feedback" rows="2" t-att-value="rating.feedback" required="1"></textarea>
-                                <button type="submit" class="btn btn-primary" style="margin-top:8px;">Re Open</button>
+                                <button type="submit" class="btn btn-primary" style="margin-top:8px;">Reopen</button>
                             </form>
                         </div>
                     </div>

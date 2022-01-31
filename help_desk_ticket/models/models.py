@@ -210,17 +210,11 @@ class ecube_team_wizard(models.Model):
 	def _compute_domain_user_ids(self):
 		for task in self:
 			if task.team_name_link:
-
 				team_id = task.env['helpdesk.team'].search([('name','=',task.team_name_link.name)])
-				
-				if task.team_name_link and team_id.visibility_member_ids:
+				if team_id:
 					task.team_users = team_id.visibility_member_ids.ids
 					if task.user_id.id not in team_id.visibility_member_ids.ids:
 						task.user_id = False
-				
-				else:
-					helpdesk_users = self.env['res.users'].search([('groups_id', 'in', self.env.ref('helpdesk.group_helpdesk_user').id)]).ids
-					task.team_users = [(6, 0, helpdesk_users)]
 
 	
 	def update_team(self):
