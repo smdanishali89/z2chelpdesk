@@ -115,7 +115,7 @@
                 
                 <xpath expr="//field[@name='team_id']" position="replace">
                     <button name="chaneg_team" type="object" string="Change Team/User" class="oe_highlight" />
-                    <field name="team_id" options="{'no_create': True ,'no_open': True}" readonly="0"/>
+                    <field name="team_id" options="{'no_create': True ,'no_open': True}" readonly="1"/>
                 </xpath>
 
 
