@@ -9,11 +9,14 @@
 
             <field name="model_id" ref="helpdesk.model_helpdesk_ticket"/>
             <field name="subject">${object.display_name}</field>
-            <field name="email_from">${object.team_id.display_name} "Helpdesk" "helpdesk@z2climited.com"></field>
+            <field name="email_from">${object.team_id.display_name} "Helpdesk" &lt;helpdesk@z2climited.com&gt;</field>
             <field name="email_to">${(object.partner_email if not object.sudo().partner_id.email or object.sudo().partner_id.email != object.partner_email else '') | safe}</field>
             <field name="partner_to">${object.partner_id.id if object.sudo().partner_id.email and object.sudo().partner_id.email == object.partner_email else ''}</field>
             <field name="body_html" type="xml">
-                <div>
+                <!-- <div style='font-family:"Lucida Grande",Helvetica,Verdana,Arial,sans-serif;'> -->
+                <div style='font-family: Roboto,RobotoDraft,Helvetica,Arial,sans-serif;'>
+
+
                     Dear ${object.sudo().partner_id.name or 'Madam/Sir'},<br /><br />
                     Your request
                     % if object.get_portal_url():
@@ -40,12 +43,11 @@
             <field name="name">Ticket: Inprogress Ecube</field>
             <field name="model_id" ref="helpdesk.model_helpdesk_ticket"/>
             <field name="subject">${object.display_name}</field>
-                <!-- ${object.team_id.display_name} "Helpdesk" <helpdesk@z2climited.com> -->
-            <field name="email_from">${object.team_id.display_name} "Helpdesk" "helpdesk@z2climited.com"></field>
+            <field name="email_from">${object.team_id.display_name} "Helpdesk" &lt;helpdesk@z2climited.com&gt;</field>
             <field name="email_to">${(object.partner_email if not object.sudo().partner_id.email or object.sudo().partner_id.email != object.partner_email else '') | safe}</field>
             <field name="partner_to">${object.partner_id.id if object.sudo().partner_id.email and object.sudo().partner_id.email == object.partner_email else ''}</field>
             <field name="body_html" type="xml">
-                <div>
+                <div style='font-family: Roboto,RobotoDraft,Helvetica,Arial,sans-serif;'>
                     Dear ${object.sudo().partner_id.name or 'Madam/Sir'},<br /><br />
                     This is to inform you that your ticket number ${object.id} "${object.name}" is in progress.<br /><br />
 
@@ -63,18 +65,20 @@
             <field name="name">Ticket: Rejected Ecube</field>
             <field name="model_id" ref="helpdesk.model_helpdesk_ticket"/>
             <field name="subject">${object.display_name}</field>
-            <field name="email_from">${object.team_id.display_name} "Helpdesk" "helpdesk@z2climited.com"></field>
+            <field name="email_from">${object.team_id.display_name} "Helpdesk" &lt;helpdesk@z2climited.com&gt;</field>
             <field name="email_to">${(object.partner_email if not object.sudo().partner_id.email or object.sudo().partner_id.email != object.partner_email else '') | safe}</field>
             <field name="partner_to">${object.partner_id.id if object.sudo().partner_id.email and object.sudo().partner_id.email == object.partner_email else ''}</field>
             <field name="body_html" type="xml">
-                <div>
+                <div style='font-family: Roboto,RobotoDraft,Helvetica,Arial,sans-serif;'>
+
+
                     Dear ${object.sudo().partner_id.name or 'Madam/Sir'},<br /><br />
                     We regret to inform you that your ticket number ${object.id} "${object.name}"  has been rejected.<br /><br />
 
                     Reason: "${object.reason_of_rejection}".<br/><br/>
-                    Thank you for your cooperation.<br/>
+                    Thank you for your cooperation.<br /><br />
 
-                    Kind regards,<br/>
+                    Kind regards,<br /><br />
                     ${object.team_id.name or 'Helpdesk'} Team.
                 </div>
             </field>
@@ -87,14 +91,14 @@
         <field name="name">Ticket: Rating Request Ecube Updated (requires rating enabled on team)</field>
         <field name="model_id" ref="helpdesk.model_helpdesk_ticket"/>
         <field name="subject">${object.company_id.name or object.user_id.company_id.name or 'Helpdesk'}: Service Rating Request</field>
-        <field name="email_from">${object.rating_get_rated_partner_id().email_formatted | safe}</field>
+        <field name="email_from">${object.team_id.display_name} "Helpdesk" &lt;helpdesk@z2climited.com&gt;</field>
         <field name="email_to">${(object.partner_email if not object.sudo().partner_id.email or object.sudo().partner_id.email != object.partner_email else '') | safe}</field>
         <field name="partner_to">${object.partner_id.id if object.sudo().partner_id.email and object.sudo().partner_id.email == object.partner_email else ''}</field>
         <field name="body_html" type="xml">
 <div>
     % set access_token = object.rating_get_access_token()
     % set partner = object.rating_get_partner_id()
-    <table border="0" cellpadding="0" cellspacing="0" style="width:100%; margin:0;">
+    <table border="0" cellpadding="0" cellspacing="0" style='font-family: Roboto,RobotoDraft,Helvetica,Arial,sans-serif;' >
     <tbody>
         <tr><td>
             % if partner.name:
