@@ -12,7 +12,11 @@
                 <sheet> 
                     <group name="group_top"> 
                         <group name="group_left">
+                            <field name="team_name_link_invisible" options="{'no_create': True,'no_open': True,'no_edit': True}" invisible="1"/>
+                           
                             <field name="team_name_link" options="{'no_create': True,'no_open': True,'no_edit': True}" readonly="1"/>
+                            <field name="remarks_required" invisible="1"/>
+                            <field name="remarks" attrs="{'required':[('remarks_required','=',True)]}"/>
                         </group>
                         <group name="group_right">
                             <field name="user_id" domain="[('id', 'in', team_users)]" options="{'no_create': True,'no_open': True,'no_edit': True}"/>
@@ -43,7 +47,7 @@
     </record>
 
     <data>
-        <record id="hide_edit_button" model="ir.ui.view">
+ <!--        <record id="hide_edit_button" model="ir.ui.view">
             <field name="name">Edit Button</field>
             <field name="model">helpdesk.ticket</field>
             <field name="inherit_id" ref="helpdesk.helpdesk_ticket_view_form"/>
@@ -53,7 +57,7 @@
                     <attribute name="edit">false</attribute>
                 </xpath>
             </field>
-        </record>
+        </record> -->
         
         <!-- Extended view = helpdesk team form (HELPDESK Team creation form) -->
         <record id="helpdesk_team_ext" model="ir.ui.view">
@@ -70,6 +74,7 @@
                             <field name="view_member_ids" widget="many2many_tags" />
                             <field name="team_name" readonly="1"/>
                             <field name="default_team"/>
+                            <field name="from_email_template"/>
                             <field name="team_name_link" invisible="1"/>
                             <field name="ticket_type" widget="many2many_tags" />
                         </group>
@@ -105,12 +110,12 @@
                     <field name="tag_ids" domain="[('id', 'in',ticket_tag)]" widget="many2many_tags" options="{'color_field': 'color','no_create': True ,'no_open': True}" />
                     <field name="ticket_tag" widget="many2many_tags" nolabel="1" invisible="1" />
                     <field name="remarks_required" invisible="1" />
-                    <field name="remarks" attrs="{'required':[('remarks_required','=',True)]}"/>
+                    <field name="remarks" attrs="{'required':[('remarks_required','=',True)]}" readonly="1"/>
                 </xpath>
                 
                 <xpath expr="//field[@name='team_id']" position="replace">
                     <button name="chaneg_team" type="object" string="Change Team/User" class="oe_highlight" />
-                    <field name="team_id" options="{'no_create': True ,'no_open': True}" readonly="1"/>
+                    <field name="team_id" options="{'no_create': True ,'no_open': True}" readonly="0"/>
                 </xpath>
 
 
@@ -168,72 +173,7 @@
             </field>
         </record>
 
-    <record id="rating_ticket_request_email_template" model="mail.template">
-        <field name="name">Ticket: Rating Request (requires rating enabled on team)</field>
-        <field name="model_id" ref="helpdesk.model_helpdesk_ticket"/>
-        <field name="subject">${object.company_id.name or object.user_id.company_id.name or 'Helpdesk'}: Service Rating Request</field>
-        <field name="email_from">${object.rating_get_rated_partner_id().email_formatted | safe}</field>
-        <field name="email_to">${(object.partner_email if not object.sudo().partner_id.email or object.sudo().partner_id.email != object.partner_email else '') | safe}</field>
-        <field name="partner_to">${object.partner_id.id if object.sudo().partner_id.email and object.sudo().partner_id.email == object.partner_email else ''}</field>
-        <field name="body_html" type="xml">
-<div>
-    % set access_token = object.rating_get_access_token()
-    % set partner = object.rating_get_partner_id()
-    <table border="0" cellpadding="0" cellspacing="0" style="width:100%; margin:0;">
-    <tbody>
-        <tr><td valign="top" style="font-size: 14px;">
-            % if partner.name:
-                Hello ${partner.name},<br/>
-            % else:
-                Hello,<br/>
-            % endif
-            Please take a moment to rate our services related to the ticket "<strong>${object.name}</strong>"
-            % if object.rating_get_rated_partner_id().name:
-                assigned to <strong>${object.rating_get_rated_partner_id().name}</strong>.<br/>
-            % else:
-                .<br/>
-            % endif
-        </td></tr>
-        <tr><td style="text-align: center;">
-            <table border="0" cellpadding="0" cellspacing="0" summary="o_mail_notification" style="width:100%; margin: 32px 0px 32px 0px;">
-                <tr><td style="font-size: 14px;">
-                    <strong>Tell us how you feel about our service</strong><br/>
-                    <span style="text-color: #888888">(click on one of these smileys)</span>
-                </td></tr>
-                <tr><td style="font-size: 14px;">
-                    <table style="width:100%;text-align:center;">
-                        <tr>
-                            <td>
-                                <a href="/rate/${access_token}/5">
-                                    <img alt="Satisfied" src="/rating/static/src/img/rating_5.png" title="Satisfied"/>
-                                </a>
-                            </td>
-                            <td>
-                                <a href="/rate/${access_token}/3">
-                                    <img alt="Not satisfied" src="/rating/static/src/img/rating_3.png" title="Not satisfied"/>
-                                </a>
-                            </td>
-                            <td>
-                                <a href="/rate/${access_token}/1">
-                                    <img alt="Highly Dissatisfied" src="/rating/static/src/img/rating_1.png" title="Highly Dissatisfied"/>
-                                </a>
-                            </td>
-                        </tr>
-                    </table>
-                </td></tr>
-            </table>
-        </td></tr>
-        <tr><td valign="top" style="font-size: 14px;">
-            We appreciate your feedback. It helps us to improve continuously.
-            <br/><span style="margin: 0px 0px 0px 0px; font-size: 12px; opacity: 0.5; color: #454748;">This customer survey has been sent because your ticket has been moved to the stage <b>${object.stage_id.name}</b></span>
-        </td></tr>
-    </tbody>
-    </table>
-</div>
-        </field>
-        <field name="lang">${object.partner_id.lang or object.user_id.lang or user.lang}</field>
-        <field name="auto_delete" eval="True"/>
-    </record>
+    
     </data>
 
         <template id="rating_external_page_submit_re_open" name="Rating Page Submit">

@@ -54,8 +54,19 @@ class team_extension(models.Model):
 	team_name_link = fields.Many2one('ecube.team', string="Team Name")
 	default_team = fields.Boolean(string="Default team")
 	team_name = fields.Char(string="Team Name")
+	from_email_template = fields.Char(string="Email Template", compute ='_update_team_name')
 	member_ids = fields.Many2many('res.users', string='Team Members' ,domain=lambda self: self._default_domain_member_ids())
 	visibility_member_ids = fields.Many2many('res.users', 'helpdesk_visibility_team', string='Team Visibility', domain=lambda self: self._default_domain_member_ids(), help="Team Members to whom this team will be visible. Keep empty for everyone to see this team.")
+
+	def _update_team_name(self):
+		for record in self:
+			if record.default_team == True:
+				record.from_email_template = ""
+			else:
+				record.from_email_template = record.name
+
+
+
 
 
 
@@ -91,22 +102,28 @@ class team_extension(models.Model):
 class ticket_extension(models.Model):
 	_inherit = ['helpdesk.ticket']
 
+
+
+	def _default_team_id(self):
+		team_id = self.env['helpdesk.team'].search([('member_ids', 'in', self.env.uid)], limit=1).id
+		if not team_id:
+			team_id = self.env['helpdesk.team'].search([], limit=1).id
+		return team_id
+
 	ticket_type = fields.Many2many('helpdesk.ticket.type', string="New Ticket type" , compute ='compute_ticket_type_tag')
 	ticket_tag = fields.Many2many('helpdesk.tag', string="Ticket tag", compute ='compute_ticket_type_tag')
 	remarks = fields.Char(string="Remarks" , track_visibility='onchange')
 	reason_of_rejection = fields.Char(string="Reason" , track_visibility='onchange')
 	reason_of_rejection_required = fields.Boolean(string="Reason Boll")
-	internal_description = fields.Char(string="description")
 	remarks_required = fields.Boolean(string="Remarks Bool" )
-	ticket_access = fields.Boolean(string="Tciket Access",default=True)
 	team_name_link = fields.Many2one('ecube.team', string="Team Name")
+	team_id = fields.Many2one('helpdesk.team', string='Helpdesk Team', default=_default_team_id, index=True, track_visibility='onchange')
 
 
 	def chaneg_team(self):
-
-		record_id = self.env.ref('help_desk_ticket.group_helpdesk_view')
-		if self._uid in record_id.users.ids:
-			raise ValidationError('Access Denied')
+		if self.team_id:
+			if self._uid in self.team_id.view_member_ids.ids:
+				raise ValidationError('Access Denied')
 		helpdesk_team = self.env['ecube.team'].sudo().search([('name','=',self.team_id.name)]).id
 
 		return {
@@ -115,7 +132,7 @@ class ticket_extension(models.Model):
 				'type': 'ir.actions.act_window',
 				'view_mode': 'form',
 				'view_type': 'form',
-				'context': {'default_team_users':self.domain_user_ids.ids,'default_user_id':self.user_id.id,'default_team_name_link':helpdesk_team},
+				'context': {'default_team_users':self.domain_user_ids.ids,'default_user_id':self.user_id.id,'default_team_name_link':helpdesk_team,'default_team_name_link_invisible':helpdesk_team,'default_remarks':self.remarks},
 				'target': 'new', }
 
 
@@ -182,11 +199,30 @@ class ticket_extension(models.Model):
 		return new_record
 
 	def write(self, vals):
-		super(ticket_extension, self).write(vals)
-		if 'stage_id' in vals:
-			record_id = self.env.ref('help_desk_ticket.group_helpdesk_view')
-			if self._uid in record_id.users.ids:
+
+		print ("write function start")
+		print (vals)
+		print (vals)
+		print (vals)
+
+		if 'user_id' in vals or 'team_id' in vals or 'remarks' in vals or 'remarks_required' in vals:
+			pass
+		else:
+			if self._uid in self.team_id.view_member_ids.ids:
 				raise ValidationError('Access Denied')
+
+
+		# if 'user_id' in vals:
+		#   if (vals['user_id']) != False:
+		#       if self.team_id:
+		#           if self._uid in self.team_id.view_member_ids.ids:
+		#               raise ValidationError('Access Denied')
+		
+		# elif vals:
+		#   if self.team_id:
+		#       if self._uid in self.team_id.view_member_ids.ids:
+		#           raise ValidationError('Access Denied')
+		super(ticket_extension, self).write(vals)
 
 		if 'stage_id' in vals and 'reason_of_rejection_required' in vals:
 			if (vals['reason_of_rejection_required']) == True and not self.reason_of_rejection:
@@ -198,12 +234,27 @@ class ticket_extension(models.Model):
 		return True
 
 
+
 class ecube_team_wizard(models.Model):
 	_name = 'ecube.team.wizard'
 
+	team_name_link_invisible = fields.Many2one('ecube.team', string="Team Name Ecube")
 	team_name_link = fields.Many2one('ecube.team', string="Team Name")
 	user_id = fields.Many2one('res.users', string="Assigned to")
 	team_users = fields.Many2many('res.users', string="Team Users", compute ='_compute_domain_user_ids')
+	remarks = fields.Char(string="Remarks" , track_visibility='onchange')
+	remarks_required = fields.Boolean(string="Remarks Bool")
+	
+
+
+	@api.onchange('team_name_link')
+	def on_chnage_of_team_remarks_required(self):
+		if self.team_name_link.id == self.team_name_link_invisible.id:
+			self.remarks_required = False
+		else:
+			self.remarks_required = True
+
+
 
 	
 	@api.depends('team_name_link')
@@ -222,6 +273,8 @@ class ecube_team_wizard(models.Model):
 		helpdesk_ticket = self.env['helpdesk.ticket'].browse(self._context.get('active_ids'))
 		helpdesk_ticket.team_id = helpdesk_team.id
 		helpdesk_ticket.user_id = self.user_id.id
+		helpdesk_ticket.remarks = self.remarks
+		helpdesk_ticket.remarks_required = self.remarks_required
 
 	def save_close(self):
 
