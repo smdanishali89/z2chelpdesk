@@ -99,7 +99,8 @@
                     <field name="reason_of_rejection" attrs="{'required':[('reason_of_rejection_required','=',True)]}"/>
                     <field name="reason_of_rejection_required" invisible="1"/>
 
-                    <field name="ticket_type_id" domain="[('id', 'in', ticket_type)]" required="1" options="{'no_create': True ,'no_open': True}"/>
+                    <field name="ticket_type_id" domain="[('id', 'in', ticket_type)]" required="0" options="{'no_create': True ,'no_open': True}"/>
+                    
                     <field name="ticket_type" widget="many2many_tags" nolabel="1" invisible="1" />
                 </xpath>
 

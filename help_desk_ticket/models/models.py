@@ -2,6 +2,7 @@
 
 from odoo import models, fields, api
 from odoo.exceptions import ValidationError
+import re
 
 
 class helpdesk_mail_template_ext(models.Model):
@@ -171,8 +172,8 @@ class ticket_extension(models.Model):
 		if self.ticket_type_id.id not in self.team_id.ticket_type.ids:
 			self.ticket_type_id = False
 
-		if self.team_id:
-			self.remarks_required = True
+		# if self.team_id:
+		# 	self.remarks_required = True
 
 
 	@api.onchange('team_id')
@@ -186,6 +187,8 @@ class ticket_extension(models.Model):
 	def create(self, vals):
 		subject = ""
 		subject =  ((vals['name']).split(' ',1))[0]
+		subject = " ".join(re.findall("[a-zA-Z]+", subject))
+		subject = subject.replace(" ", "")
 		helpdesk_team = self.env['helpdesk.team'].search([('team_name','=',subject.lower())])
 		if helpdesk_team:
 			(vals['team_id']) = helpdesk_team.id
@@ -195,15 +198,10 @@ class ticket_extension(models.Model):
 		
 		new_record = super(ticket_extension, self).create(vals)
 		new_record.compute_ticket_type_tag()
-		new_record.sudo().update_ticket_team()
+		# new_record.sudo().update_ticket_team()
 		return new_record
 
 	def write(self, vals):
-
-		print ("write function start")
-		print (vals)
-		print (vals)
-		print (vals)
 
 		if 'user_id' in vals or 'team_id' in vals or 'remarks' in vals or 'remarks_required' in vals:
 			pass
@@ -211,28 +209,20 @@ class ticket_extension(models.Model):
 			if self._uid in self.team_id.view_member_ids.ids:
 				raise ValidationError('Access Denied')
 
-
-		# if 'user_id' in vals:
-		#   if (vals['user_id']) != False:
-		#       if self.team_id:
-		#           if self._uid in self.team_id.view_member_ids.ids:
-		#               raise ValidationError('Access Denied')
-		
-		# elif vals:
-		#   if self.team_id:
-		#       if self._uid in self.team_id.view_member_ids.ids:
-		#           raise ValidationError('Access Denied')
 		super(ticket_extension, self).write(vals)
 
 		if 'stage_id' in vals and 'reason_of_rejection_required' in vals:
 			if (vals['reason_of_rejection_required']) == True and not self.reason_of_rejection:
 				raise ValidationError('Please add a reason for the rejection')
 
-		if 'team_name_link' in vals:
-			self.sudo().update_ticket_team()
+		if 'stage_id' in vals:
+			self.ticket_type_check()
 		
 		return True
 
+	def ticket_type_check(self):
+		if not self.ticket_type_id:
+			raise ValidationError('Please assign a ticket type')
 
 
 class ecube_team_wizard(models.Model):
