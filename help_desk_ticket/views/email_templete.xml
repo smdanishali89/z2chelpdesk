@@ -136,7 +136,7 @@
 
                             <td>
                                 <a href="/rate/${access_token}/1">
-                                    <img alt="REOPEN" style="margin-top:25px;" src="/help_desk_ticket/static/src/img/reload.png" title="REOPEN"/>
+                                    <img alt="REOPEN" style="margin-top:52px;" src="/help_desk_ticket/static/src/img/reload.png" title="REOPEN"/>
                                     <h4>REOPEN</h4>
                                 </a>
                             </td>
