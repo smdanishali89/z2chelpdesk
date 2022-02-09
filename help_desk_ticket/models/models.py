@@ -221,10 +221,12 @@ class ticket_extension(models.Model):
 			if self._uid in self.team_id.view_member_ids.ids:
 				raise ValidationError('Access Denied')
 
-		print (vals)
-
-
 		super(ticket_extension, self).write(vals)
+
+
+		if 'stage_id' in vals and 'reason_of_rejection_required' in vals:
+			if (vals['reason_of_rejection_required']) == True and not self.reason_of_rejection:
+				raise ValidationError('Please add a reason for the rejection')
 
 		if 'stage_id' in vals:
 			self.ticket_type_check()
