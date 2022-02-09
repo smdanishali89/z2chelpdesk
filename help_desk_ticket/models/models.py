@@ -218,7 +218,7 @@ class ticket_extension(models.Model):
 			
 			customer_record = self.env['res.partner'].search([('id','=',(vals['partner_id']))])
 			if customer_record:
-				customer_record.name = customer_name
+				customer_record.name = email_address
 			else:
 				record_id = self.env['res.partner'].create({
 					'name' : email_address,

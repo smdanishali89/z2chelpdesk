@@ -110,9 +110,9 @@
             Your ticket number ${object.id} "${object.name}" has been closed.
             <br/>
             <br/>
-            Please take a moment to rate our services related to your ticket"
-            % if object.rating_get_rated_partner_id().name:
-                assigned to ${object.rating_get_rated_partner_id().name}.<br/>
+            Please take a moment to rate our services related to your ticket
+            % if object.user_id:
+                assigned to ${object.user_id.name}.<br/>
             % else:
                 .<br/>
             % endif
