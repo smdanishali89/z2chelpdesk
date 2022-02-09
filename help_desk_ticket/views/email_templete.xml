@@ -103,11 +103,14 @@
     <tbody>
         <tr><td>
             % if partner.name:
-                Hello Dear ${partner.name},<br/><br/>
+                Dear ${partner.name},<br/><br/>
             % else:
-                Hello Dear,<br/><br/>
+                Dear,<br/><br/>
             % endif
-            Please take a moment to rate our services related to your ticket number ${object.id} "${object.name}""
+            Your ticket number ${object.id} "${object.name}" has been closed.
+            <br/>
+            <br/>
+            Please take a moment to rate our services related to your ticket"
             % if object.rating_get_rated_partner_id().name:
                 assigned to ${object.rating_get_rated_partner_id().name}.<br/>
             % else:
@@ -136,7 +139,7 @@
 
                             <td>
                                 <a href="/rate/${access_token}/1">
-                                    <img alt="REOPEN" style="padding-top:18px;" src="/help_desk_ticket/static/src/img/reload.png" title="REOPEN"/>
+                                    <img alt="REOPEN" style="padding-top:18px;height:60px !important;" src="/help_desk_ticket/static/src/img/reload.png" title="REOPEN"/>
                                     <br/>
                                     REOPEN
                                 </a>

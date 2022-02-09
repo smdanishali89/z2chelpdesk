@@ -198,6 +198,36 @@ class ticket_extension(models.Model):
 	
 	@api.model
 	def create(self, vals):
+
+		customer_name = ""
+		if 'partner_email' in vals:
+			email_address = (vals['partner_email'])
+
+			if '<' in email_address and '>' in email_address:
+				email_address = email_address.split("<")[1]
+				email_address = email_address.split(">")[0]
+			
+			final_email_address =  email_address
+			
+			if '@' in email_address:
+				email_address = email_address.split("@")[0]
+
+			email_address = email_address.replace(".", " ")
+			email_address = email_address.title()
+			email_address = ''.join([i for i in email_address if not i.isdigit()])
+			
+			customer_record = self.env['res.partner'].search([('id','=',(vals['partner_id']))])
+			if customer_record:
+				customer_record.name = customer_name
+			else:
+				record_id = self.env['res.partner'].create({
+					'name' : email_address,
+					'email' : final_email_address,
+					})
+				vals['partner_id'] = record_id.id
+
+
+
 		subject = ""
 		subject = (vals['name'])[0:7]
 		subject = subject.lower()
@@ -206,6 +236,7 @@ class ticket_extension(models.Model):
 
 		team_found = 0
 		helpdesk_team = self.env['helpdesk.team'].search([('default_team','!=',True)])
+
 		for team in helpdesk_team:
 			team_name = team.name.lower()
 			team_name_len = len(team.name.lower())
@@ -223,13 +254,14 @@ class ticket_extension(models.Model):
 
 	def write(self, vals):
 
-		if 'user_id' in vals or 'team_id' in vals or 'remarks' in vals or 'remarks_required' in vals:
+		if 'user_id' in vals or 'team_id' in vals or 'remarks' in vals or 'remarks_required' in vals or 'access_token' in vals or 'ticket_type' in vals or 'ticket_tag' in vals:
 			pass
 		else:
 			if self._uid in self.team_id.view_member_ids.ids:
 				raise ValidationError('Access Denied')
 
 		super(ticket_extension, self).write(vals)
+
 
 
 		if 'stage_id' in vals and 'reason_of_rejection_required' in vals:
