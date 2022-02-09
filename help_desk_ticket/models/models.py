@@ -199,16 +199,24 @@ class ticket_extension(models.Model):
 	@api.model
 	def create(self, vals):
 		subject = ""
-		subject =  ((vals['name']).split(' ',1))[0]
+		subject = (vals['name'])[0:7]
+		subject = subject.lower()
 		subject = " ".join(re.findall("[a-zA-Z]+", subject))
 		subject = subject.replace(" ", "")
-		helpdesk_team = self.env['helpdesk.team'].search([('team_name','=',subject.lower())])
-		if helpdesk_team:
-			(vals['team_id']) = helpdesk_team.id
-		else:
+
+		team_found = 0
+		helpdesk_team = self.env['helpdesk.team'].search([('default_team','!=',True)])
+		for team in helpdesk_team:
+			team_name = team.name.lower()
+			team_name_len = len(team.name.lower())
+			subject = subject[0:team_name_len]
+			if team.name.lower() == subject:
+				(vals['team_id']) = team.id
+				team_found = 1
+		if team_found == 0:
 			default_team = self.env['helpdesk.team'].search([('default_team','=',True)], limit=1).id
 			(vals['team_id']) = default_team
-		
+
 		new_record = super(ticket_extension, self).create(vals)
 		new_record.compute_ticket_type_tag()
 		return new_record
