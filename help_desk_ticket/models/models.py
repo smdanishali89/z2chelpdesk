@@ -19,16 +19,25 @@ class helpdesk_mail_ext(models.Model):
 	
 	@api.model
 	def create(self, vals):
-		if (vals['message_type']) == "comment" and  (vals['model']) == "helpdesk.ticket":
-			ticket_record = (vals['parent_id'])
-			ticket_id = self.env['helpdesk.ticket'].search([('id','=',(vals['res_id']) )])
-			(vals['email_from']) =  str(ticket_id.team_id.name)+' Helpdesk <helpdesk@z2climited.com>'
-		
-		if (vals['message_type']) == "notification" and  (vals['model']) == "helpdesk.ticket" and (vals['author_id']) == 4:
-			ticket_id = self.env['helpdesk.ticket'].search([('id','=',(vals['res_id']) )])
-			(vals['author_id']) =   ticket_id.partner_id.id
+		if 'message_type' in vals and 'model' in vals:
+			if (vals['message_type']) == "comment" and (vals['model']) == "helpdesk.ticket":
+				ticket_record = (vals['parent_id'])
+				ticket_id = self.env['helpdesk.ticket'].search([('id','=',(vals['res_id']) )])
+				(vals['email_from']) =  str(ticket_id.team_id.name)+' Helpdesk <helpdesk@z2climited.com>'
+			
+			if (vals['message_type']) == "notification" and  (vals['model']) == "helpdesk.ticket" and (vals['author_id']) == 4:
+				ticket_id = self.env['helpdesk.ticket'].search([('id','=',(vals['res_id']) )])
+				(vals['author_id']) =   ticket_id.partner_id.id
 
 		new_record = super(helpdesk_mail_ext, self).create(vals)
+
+		if 'message_type' in vals and 'model' in vals and 'subtype_id' in vals:
+			if (vals['message_type']) == "email" and  (vals['model']) == "helpdesk.ticket" and (vals['subtype_id']) == 4:
+				""" SUBTYPE 4 IS TICKET CREATED """
+				ticket_id = self.env['helpdesk.ticket'].search([('id','=',(vals['res_id']) )])
+				if not ticket_id.body:
+					ticket_id.body =  new_record.body
+		
 		return new_record
 
 
@@ -39,6 +48,8 @@ class helpdesk_stage_extention(models.Model):
 
 	re_open_stage = fields.Boolean(string="Re Open Stage")
 	rejected_stage = fields.Boolean(string="Rejected Stage")
+	in_progress = fields.Boolean(string="In Progress Stage")
+	complete_stage = fields.Boolean(string="Complete Stage")
 
 
 class team_extension(models.Model):
@@ -120,6 +131,9 @@ class ticket_extension(models.Model):
 	team_name_link = fields.Many2one('ecube.team', string="Team Name")
 	team_id = fields.Many2one('helpdesk.team', string='Helpdesk Team', default=_default_team_id, index=True, track_visibility='onchange')
 
+	body = fields.Html(string="Body")
+
+
 
 	def chaneg_team(self):
 		if self.team_id:
@@ -135,7 +149,6 @@ class ticket_extension(models.Model):
 				'view_type': 'form',
 				'context': {'default_team_users':self.domain_user_ids.ids,'default_user_id':self.user_id.id,'default_team_name_link':helpdesk_team,'default_team_name_link_invisible':helpdesk_team,'default_remarks':self.remarks},
 				'target': 'new', }
-
 
 
 	@api.onchange('team_id')
@@ -198,7 +211,6 @@ class ticket_extension(models.Model):
 		
 		new_record = super(ticket_extension, self).create(vals)
 		new_record.compute_ticket_type_tag()
-		# new_record.sudo().update_ticket_team()
 		return new_record
 
 	def write(self, vals):
@@ -209,11 +221,10 @@ class ticket_extension(models.Model):
 			if self._uid in self.team_id.view_member_ids.ids:
 				raise ValidationError('Access Denied')
 
-		super(ticket_extension, self).write(vals)
+		print (vals)
 
-		if 'stage_id' in vals and 'reason_of_rejection_required' in vals:
-			if (vals['reason_of_rejection_required']) == True and not self.reason_of_rejection:
-				raise ValidationError('Please add a reason for the rejection')
+
+		super(ticket_extension, self).write(vals)
 
 		if 'stage_id' in vals:
 			self.ticket_type_check()
@@ -222,7 +233,9 @@ class ticket_extension(models.Model):
 
 	def ticket_type_check(self):
 		if not self.ticket_type_id:
-			raise ValidationError('Please assign a ticket type')
+			if self.stage_id.in_progress == True  or self.stage_id.complete_stage == True:
+				raise ValidationError('Please assign a ticket type')
+
 
 
 class ecube_team_wizard(models.Model):

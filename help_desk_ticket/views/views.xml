@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-
-
-
     <record id="team_wizard_view_form" model="ir.ui.view"> 
         <field name="name">team_wizard_view_form</field> 
         <field name="model">ecube.team.wizard</field> 
@@ -96,15 +93,14 @@
             <field name="arch" type="xml">
                 
                 <xpath expr="//field[@name='ticket_type_id']" position="replace">
-                    <field name="reason_of_rejection" attrs="{'required':[('reason_of_rejection_required','=',True)]}"/>
-                    <field name="reason_of_rejection_required" invisible="1"/>
-
+                    <field name="reason_of_rejection" string="Reason For Rejection"/>
                     <field name="ticket_type_id" domain="[('id', 'in', ticket_type)]" required="0" options="{'no_create': True ,'no_open': True}"/>
                     
                     <field name="ticket_type" widget="many2many_tags" nolabel="1" invisible="1" />
                 </xpath>
 
                 <xpath expr="//button[@name='assign_ticket_to_self']" position="replace">
+                    <button name="chaneg_team" type="object" string="Change Team/User" class="oe_highlight" />
                 </xpath>
 
                 <xpath expr="//field[@name='tag_ids']" position="replace">
@@ -116,8 +112,15 @@
                 
                 
                 <xpath expr="//field[@name='team_id']" position="replace">
-                    <button name="chaneg_team" type="object" string="Change Team/User" class="oe_highlight" />
                     <field name="team_id" options="{'no_create': True ,'no_open': True}" readonly="1"/>
+                    <field name="body" invisible="1"/>
+                </xpath>
+                
+                
+                <xpath expr="//field[@name='partner_id']" position="before">
+                    <field name="create_date" readonly="1"/>
+                    <field name="close_date" readonly="1"/>
+                    <field name="close_hours" readonly="1" invisible="1"/>
                 </xpath>
 
 
@@ -170,6 +173,8 @@
                 <xpath expr="//field[@name='is_close']" position="after">
                     <field name="re_open_stage"/>
                     <field name="rejected_stage"/>
+                    <field name="in_progress"/>
+                    <field name="complete_stage"/>
                 </xpath>
 
             </field>
@@ -196,11 +201,11 @@
                                     </t>
                                 </div>
                                 <div class="clearfix"></div>
-                                <p class="mt-5">
-                                    Comment Box:
+                                <p class="mt-5" >
+                                    Reason For Reopening:
                                 </p>
                                 <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
-                                <textarea class="form-control" name="feedback" rows="2" t-att-value="rating.feedback" required="1"></textarea>
+                                <textarea class="form-control" name="feedback" rows="8" t-att-value="rating.feedback" required="1" style="width:400px !important;"></textarea>
                                 <button type="submit" class="btn btn-primary" style="margin-top:8px;">Reopen</button>
                             </form>
                         </div>
