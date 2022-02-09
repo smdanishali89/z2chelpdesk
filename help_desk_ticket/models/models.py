@@ -32,7 +32,7 @@ class helpdesk_mail_ext(models.Model):
 		new_record = super(helpdesk_mail_ext, self).create(vals)
 
 		if 'message_type' in vals and 'model' in vals and 'subtype_id' in vals:
-			if (vals['message_type']) == "email" and  (vals['model']) == "helpdesk.ticket" and (vals['subtype_id']) == 4:
+			if (vals['message_type']) == "email" and  (vals['model']) == "helpdesk.ticket" and (vals['subtype_id']) == 22:
 				""" SUBTYPE 4 IS TICKET CREATED """
 				ticket_id = self.env['helpdesk.ticket'].search([('id','=',(vals['res_id']) )])
 				if not ticket_id.body:
