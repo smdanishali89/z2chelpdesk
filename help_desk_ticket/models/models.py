@@ -327,7 +327,7 @@ class ecube_team_wizard(models.Model):
 		form_view_id = self.env.ref('helpdesk.helpdesk_team_view_kanban').id
 		return {
 		'type': 'ir.actions.act_window',
-		'name': "New Draft Created",
+		'name': "Helpdesk Overview",
 		'view_type': 'kanban',
 		'view_mode': 'kanban,form',
 		'res_model': 'helpdesk.team',

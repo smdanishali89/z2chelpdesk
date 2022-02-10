@@ -119,14 +119,18 @@
                 
                 
                 <xpath expr="//field[@name='partner_id']" position="before">
-                    <field name="create_date" readonly="1"/>
-                    <field name="close_date" readonly="1"/>
-                    <field name="close_hours" readonly="1" invisible="1"/>
+                    <field name="create_date" readonly="1" string="Creation Date"/>
+                    <field name="close_date" readonly="1" string="Close Date"/>
+                    <field name="close_hours" readonly="1" invisible="1" />
                 </xpath>
 
 
                 <xpath expr="//field[@name='user_id']" position="attributes">
                      <attribute name="options">{'no_open':True}</attribute> 
+                </xpath>
+
+                <xpath expr="//field[@name='user_id']" position="attributes">
+                     <attribute name="string">Assigned To</attribute> 
                 </xpath>
 
                 <xpath expr="//field[@name='user_id']" position="attributes">
@@ -188,8 +192,12 @@
             <field name="arch" type="xml">
                 
                 <xpath expr="//field[@name='stage_id']" position="before" >
-                    <field name="create_date" optional="hide"/>
-                    <field name="close_date" optional="hide"/>
+                    <field name="create_date" optional="hide" string="Creation Date"/>
+                    <field name="close_date" optional="hide" string="Close Date"/>
+                </xpath>
+                
+                <xpath expr="//field[@name='user_id']" position="replace" >
+                    <field name="user_id" optional="show" widget="many2one_avatar_user" string="Assigned To"/>
                 </xpath>
 
             </field>
