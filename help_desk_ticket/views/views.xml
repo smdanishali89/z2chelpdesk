@@ -44,17 +44,18 @@
     </record>
 
     <data>
- <!--        <record id="hide_edit_button" model="ir.ui.view">
-            <field name="name">Edit Button</field>
-            <field name="model">helpdesk.ticket</field>
-            <field name="inherit_id" ref="helpdesk.helpdesk_ticket_view_form"/>
-            <field name="groups_id"    eval="[(6, 0, [ref('help_desk_ticket.group_helpdesk_view') ])]" />
-            <field name="arch" type="xml">
-                <xpath expr="/form" position="attributes">
-                    <attribute name="edit">false</attribute>
-                </xpath>
+
+        <record id="help_desk_team_extention_readonly_0" model="ir.ui.view">
+            <field name="name">help_desk_team_extention_readonly_0</field>
+            <field name="model">ecube.team.wizard</field>
+            <field name="inherit_id" ref="team_wizard_view_form" />
+            <field name="groups_id" eval="[(6, 0, [ref('helpdesk.group_helpdesk_manager')])]" />                
+            <field name="arch" type="xml">                                   
+                <field name="team_name_link" position="attributes">
+                   <attribute name="readonly">0</attribute>                   
+                </field>
             </field>
-        </record> -->
+        </record> 
         
         <!-- Extended view = helpdesk team form (HELPDESK Team creation form) -->
         <record id="helpdesk_team_ext" model="ir.ui.view">
@@ -154,19 +155,23 @@
             </field>
         </record>
 
+        <record id="helpdesk_ticket_tree_ext" model="ir.ui.view">
+            <field name="name">helpdesk_ticket_tree_ext</field>
+            <field name="model">helpdesk.ticket</field>
+            <field name="inherit_id" ref="helpdesk.helpdesk_tickets_view_tree" />
+            <field name="arch" type="xml">
+                
+                <xpath expr="//field[@name='stage_id']" position="before" >
+                    <field name="create_date" optional="hide" string="Creation Date"/>
+                    <field name="close_date" optional="hide" string="Close Date"/>
+                </xpath>
+                
+                <xpath expr="//field[@name='user_id']" position="replace" >
+                    <field name="user_id" optional="show" widget="many2one_avatar_user" string="Assigned To"/>
+                </xpath>
 
-        <record id="help_desk_team_extention_readonly_0" model="ir.ui.view">
-            <field name="name">help_desk_team_extention_readonly_0</field>
-            <field name="model">ecube.team.wizard</field>
-            <field name="inherit_id" ref="team_wizard_view_form" />
-            <field name="groups_id" eval="[(6, 0, [ref('helpdesk.group_helpdesk_manager')])]" />                
-            <field name="arch" type="xml">                                   
-                <field name="team_name_link" position="attributes">
-                   <attribute name="readonly">0</attribute>                   
-                </field>
             </field>
-        </record>  
-
+        </record> 
 
         <!-- Extended view = All tickets (create ticket forms) -->
         <record id="helpdesk_stage_ext" model="ir.ui.view">
@@ -184,56 +189,6 @@
 
             </field>
         </record>
-
-        <record id="helpdesk_ticket_tree_ext" model="ir.ui.view">
-            <field name="name">helpdesk_ticket_tree_ext</field>
-            <field name="model">helpdesk.ticket</field>
-            <field name="inherit_id" ref="helpdesk.helpdesk_tickets_view_tree" />
-            <field name="arch" type="xml">
-                
-                <xpath expr="//field[@name='stage_id']" position="before" >
-                    <field name="create_date" optional="hide" string="Creation Date"/>
-                    <field name="close_date" optional="hide" string="Close Date"/>
-                </xpath>
-                
-                <xpath expr="//field[@name='user_id']" position="replace" >
-                    <field name="user_id" optional="show" widget="many2one_avatar_user" string="Assigned To"/>
-                </xpath>
-
-            </field>
-        </record>
-
-    
     </data>
 
-        <template id="rating_external_page_submit_re_open" name="Rating Page Submit">
-            <t t-call="web.frontend_layout">
-                <div class="container card mb-5 mt-4 o_rating_page_submit">
-                    <div class="card-body">
-                        <div class="row text-center justify-content-center">
-                            <h1 class="col-12 mt-5">Are you sure you want to reopen the ticket?</h1>
-                            <form t-attf-action="/rate/#{token}/submit_feedback" method="post">
-                                <div class="btn-group btn-group-toggle row" data-toggle="buttons">
-                                    <t t-foreach="rate_names" t-as="rate_name">
-                                        <label t-attf-class="col-xs-12 btn o_rating_label shadow-none {{rate == rate_name and 'active' or ''}}">
-                                            <input type="radio" name="rate" t-attf-id="rate_{{rate_name}}" t-att-value="rate_name" t-att-checked="rate == rate_name"/>
-                                            <!-- <a class="o_rating" href="#">
-                                                <img t-attf-src='/rating/static/src/img/rating_#{rate_name}.png' t-att-alt="rate_name_value" t-att-title="rate_name_value"/>
-                                            </a> -->
-                                        </label>
-                                    </t>
-                                </div>
-                                <div class="clearfix"></div>
-                                <p class="mt-5" >
-                                    Reason For Reopening:
-                                </p>
-                                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
-                                <textarea class="form-control" name="feedback" rows="8" t-att-value="rating.feedback" required="1" style="width:400px !important;"></textarea>
-                                <button type="submit" class="btn btn-primary" style="margin-top:8px;">Reopen</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </t>
-        </template>
 </odoo>

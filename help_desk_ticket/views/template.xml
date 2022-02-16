@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="rating_external_page_submit_re_open" name="Rating Page Submit">
+            <t t-call="web.frontend_layout">
+                <div class="container card mb-5 mt-4 o_rating_page_submit">
+                    <div class="card-body">
+                        <div class="row text-center justify-content-center">
+                            <h1 class="col-12 mt-5">Are you sure you want to reopen the ticket?</h1>
+                            <form t-attf-action="/rate/#{token}/submit_feedback" method="post">
+                                <div class="btn-group btn-group-toggle row" data-toggle="buttons">
+                                    <t t-foreach="rate_names" t-as="rate_name">
+                                        <label t-attf-class="col-xs-12 btn o_rating_label shadow-none {{rate == rate_name and 'active' or ''}}">
+                                            <input type="radio" name="rate" t-attf-id="rate_{{rate_name}}" t-att-value="rate_name" t-att-checked="rate == rate_name"/>
+                                        </label>
+                                    </t>
+                                    <p>
+                                        Subject: 
+                                        <strong> 
+                                        <span t-esc="subject"></span>
+                                    </strong>
+                                    <br/>
+                                    Ticket ID: 
+                                    <strong> 
+                                    <span t-esc="ticket_id"></span>
+                                </strong>
+                                    </p>
+
+                                </div>
+                                <div class="clearfix"></div>
+                                <p class="mt-5" >
+                                    Reason For Reopening:
+                                </p>
+                                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                <textarea class="form-control" name="feedback" rows="8" t-att-value="rating.feedback" required="1" style="width:400px !important;"></textarea>
+                                <button type="submit" class="btn btn-primary" style="margin-top:8px;">Reopen Ticket</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </t>
+    </template>
+    
+    
+    <template id="rating_external_page_view_ext" name="Rating Page Done">
+        <t t-call="web.frontend_layout">
+            <div class="container pt-5">
+                <div class="text-center mt-5 pt-5">
+                    <h3 class="d-inline">Thank you!</h3>
+                </div>
+                <div class="text-center">
+                    <a role="button" t-att-href="web_base_url" class="btn btn-primary my-5">Go back to the Homepage</a>
+                </div>
+            </div>
+        </t>
+    </template>
+
+
+</odoo>

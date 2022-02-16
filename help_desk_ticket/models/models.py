@@ -70,6 +70,51 @@ class team_extension(models.Model):
 	member_ids = fields.Many2many('res.users', string='Team Members' ,domain=lambda self: self._default_domain_member_ids())
 	visibility_member_ids = fields.Many2many('res.users', 'helpdesk_visibility_team', string='Team Visibility', domain=lambda self: self._default_domain_member_ids(), help="Team Members to whom this team will be visible. Keep empty for everyone to see this team.")
 
+	
+	def _check_modules_to_install(self):
+		# mapping of field names to module names
+		FIELD_MODULE = {
+			'use_website_helpdesk_form': 'website_helpdesk_form',
+			'use_website_helpdesk_livechat': 'website_helpdesk_livechat',
+			'use_website_helpdesk_forum': 'website_helpdesk_forum',
+			'use_website_helpdesk_slides': 'website_helpdesk_slides',
+			'use_helpdesk_timesheet': 'helpdesk_timesheet',
+			'use_helpdesk_sale_timesheet': 'helpdesk_sale_timesheet',
+			'use_credit_notes': 'helpdesk_account',
+			'use_product_returns': 'helpdesk_stock',
+			'use_product_repairs': 'helpdesk_repair',
+			'use_coupons': 'helpdesk_sale_coupon',
+		}
+
+		# determine the modules to be installed
+		expected = [
+			mname
+			for fname, mname in FIELD_MODULE.items()
+			if any(team[fname] for team in self)
+		]
+		modules = self.env['ir.module.module']
+		if expected:
+			STATES = ('installed', 'to install', 'to upgrade')
+			modules = modules.search([('name', 'in', expected)])
+			modules = modules.filtered(lambda module: module.state not in STATES)
+
+		# other stuff
+		
+		""" Ecube for stop default rating email template """
+		for team in self:
+			if team.use_rating:
+				for stage in team.stage_ids:
+					if stage.is_close and not stage.fold:
+						pass
+						# stage.template_id = self.env.ref('helpdesk.rating_ticket_request_email_template', raise_if_not_found= False)
+
+		if modules:
+			modules.button_immediate_install()
+
+		# just in case we want to do something if we install a module. (like a refresh ...)
+		return bool(modules)
+
+
 	def _update_team_name(self):
 		for record in self:
 			if record.default_team == True:
@@ -130,8 +175,12 @@ class ticket_extension(models.Model):
 	remarks_required = fields.Boolean(string="Remarks Bool" )
 	team_name_link = fields.Many2one('ecube.team', string="Team Name")
 	team_id = fields.Many2one('helpdesk.team', string='Helpdesk Team', default=_default_team_id, index=True, track_visibility='onchange')
-
 	body = fields.Html(string="Body")
+
+	user_id = fields.Many2one(
+	'res.users', string='Assigned', compute='_compute_user_and_stage_ids', store=True,
+	readonly=False, tracking=True,
+	domain=lambda self: [('groups_id', 'in', self.env.ref('helpdesk.group_helpdesk_user').id)])
 
 
 
@@ -186,7 +235,7 @@ class ticket_extension(models.Model):
 			self.ticket_type_id = False
 
 		# if self.team_id:
-		# 	self.remarks_required = True
+		#   self.remarks_required = True
 
 
 	@api.onchange('team_id')
